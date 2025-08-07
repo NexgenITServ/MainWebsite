@@ -1,10 +1,11 @@
 'use client'
 import Link from 'next/link'
 import { Logo } from '@/components/logo'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, User, LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import React from 'react'
 import ModeToggle from "@/components/mode-toggle"
+import { useSession, signOut } from 'next-auth/react'
 
 const menuItems = [
     { name: 'Features', href: '#link' },
@@ -15,6 +16,7 @@ const menuItems = [
 
 export const HeroHeader = () => {
     const [menuState, setMenuState] = React.useState(false)
+    const { data: session, status } = useSession()
     return (
         <header>
             <nav
@@ -68,22 +70,46 @@ export const HeroHeader = () => {
                                 </ul>
                             </div>
                             <div className="flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit">
-                                <Button
-                                    asChild
-                                    variant="outline"
-                                    size="sm">
-                                    <Link href="#">
-                                        <span>Login</span>
-                                    </Link>
-                                </Button>
-                                <Button
-                                    asChild
-                                    size="sm">
-                                    <Link href="#">
-                                        <span>Sign Up</span>
-                                    </Link>
-                                </Button>
-                                <ModeToggle />
+                                {status === 'loading' ? (
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
+                                        <span className="text-sm text-gray-500">Loading...</span>
+                                    </div>
+                                ) : session ? (
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex items-center gap-2 text-sm">
+                                            <User className="w-4 h-4" />
+                                            <span className="hidden sm:inline">{session.user?.name || session.user?.email}</span>
+                                        </div>
+                                        <Button
+                                            onClick={() => signOut()}
+                                            variant="outline"
+                                            size="sm">
+                                            <LogOut className="w-4 h-4 mr-2" />
+                                            <span>Sign Out</span>
+                                        </Button>
+                                        <ModeToggle />
+                                    </div>
+                                ) : (
+                                    <>
+                                        <Button
+                                            asChild
+                                            variant="outline"
+                                            size="sm">
+                                            <Link href="/auth/signin">
+                                                <span>Login</span>
+                                            </Link>
+                                        </Button>
+                                        <Button
+                                            asChild
+                                            size="sm">
+                                            <Link href="/auth/signup">
+                                                <span>Sign Up</span>
+                                            </Link>
+                                        </Button>
+                                        <ModeToggle />
+                                    </>
+                                )}
                             </div>
                         </div>
                     </div>
